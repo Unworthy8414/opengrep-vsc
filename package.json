@@ -1,0 +1,227 @@
+{
+  "name": "opengrep-vsc",
+  "displayName": "OpenGrep",
+  "description": "OpenGrep static analysis for VS Code - find security issues and bugs in your code",
+  "version": "0.1.0",
+  "publisher": "opengrep",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "opengrep",
+    "static analysis",
+    "security",
+    "linter",
+    "sast"
+  ],
+  "icon": "media/icon.png",
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "opengrep.scan",
+        "title": "OpenGrep: Scan Current File",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "opengrep.scanWorkspace",
+        "title": "OpenGrep: Scan Workspace",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "opengrep.clearFindings",
+        "title": "OpenGrep: Clear Findings",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "opengrep.suppressFinding",
+        "title": "Suppress OpenGrep Finding"
+      },
+      {
+        "command": "opengrep.suppressRule",
+        "title": "Suppress This Rule in File"
+      },
+      {
+        "command": "opengrep.suppressRuleGlobally",
+        "title": "Suppress This Rule Globally"
+      },
+      {
+        "command": "opengrep.showOutput",
+        "title": "OpenGrep: Show Output"
+      },
+      {
+        "command": "opengrep.installCLI",
+        "title": "OpenGrep: Install/Update CLI"
+      },
+      {
+        "command": "opengrep.downloadDefaultRules",
+        "title": "OpenGrep: Download Default Security Rules",
+        "icon": "$(cloud-download)"
+      }
+    ],
+    "configuration": {
+      "title": "OpenGrep",
+      "properties": {
+        "opengrep.binaryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to OpenGrep binary (leave empty to use system PATH)"
+        },
+        "opengrep.rulesPath": {
+          "type": "string",
+          "default": ".opengrep/rules",
+          "description": "Path to OpenGrep rules directory"
+        },
+        "opengrep.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run OpenGrep scan when files are saved"
+        },
+        "opengrep.severity": {
+          "type": "string",
+          "default": "INFO",
+          "enum": [
+            "INFO",
+            "WARNING",
+            "ERROR"
+          ],
+          "description": "Minimum severity level to report"
+        },
+        "opengrep.defaultRulesRepo": {
+          "type": "string",
+          "default": "https://github.com/opengrep/opengrep-rules",
+          "description": "GitHub repository URL for default security rules"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "opengrep",
+          "title": "OpenGrep",
+          "icon": "media/opengrep-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "opengrep": [
+        {
+          "id": "opengrep.findings",
+          "name": "Security Findings",
+          "icon": "media/opengrep-icon.svg",
+          "contextualTitle": "OpenGrep Findings"
+        },
+        {
+          "id": "opengrep.rules",
+          "name": "Rules",
+          "icon": "media/opengrep-icon.svg",
+          "contextualTitle": "OpenGrep Rules"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "opengrep.findings",
+        "contents": "No OpenGrep findings yet.\n[Scan Current File](command:opengrep.scan)\n[Scan Workspace](command:opengrep.scanWorkspace)",
+        "when": "workspaceFolderCount > 0"
+      },
+      {
+        "view": "opengrep.rules",
+        "contents": "No OpenGrep rules found.\n[Download Default Rules](command:opengrep.downloadDefaultRules)\nOr create rules in `.opengrep/rules` directory.",
+        "when": "workspaceFolderCount > 0"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "opengrep.scan",
+          "when": "view == opengrep.findings",
+          "group": "navigation@1"
+        },
+        {
+          "command": "opengrep.scanWorkspace",
+          "when": "view == opengrep.findings",
+          "group": "navigation@2"
+        },
+        {
+          "command": "opengrep.clearFindings",
+          "when": "view == opengrep.findings",
+          "group": "navigation@3"
+        },
+        {
+          "command": "opengrep.downloadDefaultRules",
+          "when": "view == opengrep.rules",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "opengrep.suppressFinding",
+          "when": "view == opengrep.findings && viewItem =~ /opengrep-/",
+          "group": "1_suppress@1"
+        },
+        {
+          "command": "opengrep.suppressRule",
+          "when": "view == opengrep.findings && viewItem =~ /opengrep-/",
+          "group": "1_suppress@2"
+        },
+        {
+          "command": "opengrep.suppressRuleGlobally",
+          "when": "view == opengrep.findings && viewItem =~ /opengrep-/",
+          "group": "1_suppress@3"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "opengrep.suppressFinding",
+          "when": "editorHasSelection && resourceExtname =~ /\\.(py|js|ts|java|go|rb|php|c|cpp|cs)$/",
+          "group": "opengrep@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "yaml": "^2.3.0",
+    "unzipper": "^0.10.14"
+  },
+  "activationEvents": [
+    "onCommand:opengrep.scan",
+    "onCommand:opengrep.scanWorkspace",
+    "onCommand:opengrep.clearFindings",
+    "onCommand:opengrep.suppressFinding",
+    "onCommand:opengrep.suppressRule",
+    "onCommand:opengrep.suppressRuleGlobally",
+    "onCommand:opengrep.showOutput",
+    "onCommand:opengrep.installCLI",
+    "onCommand:opengrep.downloadDefaultRules",
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:java",
+    "onLanguage:go",
+    "workspaceContains:.opengrep/**"
+  ],
+  "license": "LGPL-2.1"
+}
